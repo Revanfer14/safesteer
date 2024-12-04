@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Install the dependencies:
+Install the dependencies (open your Vscode terminal):
 
 ```bash
 pip install -r requirements.txt
