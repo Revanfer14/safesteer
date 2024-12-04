@@ -5,7 +5,11 @@
 Install the dependencies (open your Vscode terminal):
 
 ```bash
-pip install -r requirements.txt
+pip install opencv-python
+pip install numpy
+pip install tensorflow
+pip install flask
+pip install flask-socketio
 ```
 
 ## Usage
