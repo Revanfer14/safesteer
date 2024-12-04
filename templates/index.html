@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>SafeSteer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom right, #cfe8ff, #e6d7ff);
+            color: #333;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        #video-container {
+            margin-top: 20px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 640px;
+            width: 100%;
+        }
+        #camera-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        #status, #drowsiness-result {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .btn {
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn.stop {
+            background-color: #f44336;
+        }
+        .btn.stop:hover {
+            background-color: #d32f2f;
+        }
+        #video-stream {
+            width: 100%;
+            height: auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Driver Drowsiness Detector</h1>
+    
+    <div id="camera-controls">
+        <button id="start-btn" class="btn">Start Camera</button>
+        <button id="stop-btn" class="btn stop" disabled>Stop Camera</button>
+    </div>
+    
+    <div id="video-container">
+        <img id="video-stream" alt="Video Feed">
+    </div>
+    
+    <div id="status">Camera Status: Inactive</div>
+    <div id="drowsiness-result"></div>
+
+    <!-- Add audio element for alarm -->
+    <audio id="alarm-sound" src="/static/sounds/alarm.mp3" preload="auto"></audio>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const videoStream = document.getElementById('video-stream');
+        const statusDisplay = document.getElementById('status');
+        const drowsinessResult = document.getElementById('drowsiness-result');
+        const alarmSound = document.getElementById('alarm-sound');
+
+        // Variable to track if alarm is currently playing
+        let isAlarmPlaying = false;
+
+        startBtn.addEventListener('click', () => {
+            fetch('/start_camera')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "Camera started") {
+                        videoStream.src = '/video_feed';
+                        videoStream.style.display = 'block';
+                        statusDisplay.textContent = 'Camera Status: Active';
+                        startBtn.disabled = true;
+                        stopBtn.disabled = false;
+                    }
+                });
+        });
+
+        stopBtn.addEventListener('click', () => {
+            fetch('/stop_camera')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "Camera stopped") {
+                        videoStream.src = '';
+                        videoStream.style.display = 'none';
+                        statusDisplay.textContent = 'Camera Status: Inactive';
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                        drowsinessResult.textContent = '';
+                        
+                        // Stop and reset alarm if it's playing
+                        alarmSound.pause();
+                        alarmSound.currentTime = 0;
+                        isAlarmPlaying = false;
+                    }
+                });
+        });
+
+        const socket = io.connect(window.location.origin);
+        isAlarmPlaying = false;
+
+    socket.on('drowsiness_update', (data) => {
+    drowsinessResult.textContent = `Status: ${data.status} (${data.probability.toFixed(2)})`;
+    drowsinessResult.style.color = data.status === 'Drowsy' ? 'red' : 'green';
+
+    if (data.status === 'Drowsy') {
+        if (!isAlarmPlaying) {
+            try {
+                alarmSound.loop = true;
+                alarmSound.play().then(() => {
+                    isAlarmPlaying = true;
+                }).catch(error => {
+                    console.error('Error playing audio:', error);
+                });
+            } catch (error) {
+                console.error('Unexpected audio play error:', error);
+            }
+        }
+    } else {
+        if (isAlarmPlaying) {
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+            isAlarmPlaying = false;
+        }
+    }
+});
+
+// Ensure the audio context is unlocked on user interaction
+document.addEventListener('click', () => {
+    alarmSound.play().catch(() => {}); // Start and immediately pause to unlock audio context
+    alarmSound.pause();
+    alarmSound.currentTime = 0;
+    document.removeEventListener('click', this);
+});
+
+    </script>
+</body>
+</html>
