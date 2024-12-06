@@ -13,7 +13,7 @@ pip install flask-socketio
 ```
 
 ## Usage
-1) To run locally, either run from the IDE or use the following command on your terminal
+1) To run locally, either run from the IDE or use the following command on your terminal [Make sure you are currently in app.py]
    ```bash
    python app.py
    ```
