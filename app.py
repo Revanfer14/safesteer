@@ -33,7 +33,7 @@ def detect_drowsiness(frame):
     drowsy_prob = prediction[0][0]
     
     # Annotate frame with drowsiness status
-    status = "Drowsy" if drowsy_prob > 0.7 else "Awake"
+    status = "Awake" if drowsy_prob > 0.9 else "Drowsy"
     color = (0, 0, 255) if status == "Drowsy" else (0, 255, 0)
     
     cv2.putText(frame, 
