@@ -1,4 +1,4 @@
-# SafeSteer
+# SafeSteer 👀🚗
 
 ## Prerequisites
 
