@@ -16,11 +16,11 @@ pip install flask-socketio
 
 ## Usage
 1) To run locally, open Vscode terminal and make sure you are currently in app.py, then type this in the terminal:
-   # Windows
+   ### Windows
    ```bash
    python app.py
    ```
-   # Mac
+   ### Mac
    ```bash
    python3 app.py
    ```
