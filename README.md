@@ -1,6 +1,6 @@
 # SafeSteer 👀🚗
 
-## Make sure you have the Python 3.12... (3.12 or lower version) not Python 3.13 version!
+### Make sure you have the Python 3.12... (3.12 or lower version) not Python 3.13 version!
 
 ## Prerequisites
 
